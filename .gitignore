@@ -6,6 +6,9 @@ __MACOSX
 .pydevproject
 .settings
 *.pyc
+bin/*
+lib/*.so
+lib/*.a
 api/docs
 api/lib/phpvideotoolkit/config.php
 build/css/*

@@ -107,13 +107,15 @@ def create_db(adminuser, adminpass, dbhost, dbname, dbuser, dbpass, mysql, adapt
     """
 
     create_str = "CREATE DATABASE IF NOT EXISTS %s;" % dbname
-    grant_str = "GRANT ALL ON %s.* TO '%s'@'localhost' IDENTIFIED BY '%s';" % (dbname, dbuser, dbpass)
+    user_str = "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';" % (dbuser, dbpass)
+    grant_str = "GRANT ALL ON %s.* TO '%s'@'localhost';" % (dbname, dbuser)
 
     if mysql:
         try:
            db = adaptor.connect(autocommit= True, use_unicode=True, charset="utf8", host=dbhost, user=adminuser, passwd=adminpass)
            cursor = db.cursor()
            cursor.execute(create_str)
+           cursor.execute(user_str)
            cursor.execute(grant_str)
            cursor.execute("FLUSH PRIVILEGES;")
         except adaptor.Error as e:
@@ -124,6 +126,7 @@ def create_db(adminuser, adminpass, dbhost, dbname, dbuser, dbpass, mysql, adapt
             db = adaptor.connect(database="postgres", user=adminuser, password=adminpass)
             cursor = db.cursor()
             cursor.execute(create_str)
+            cursor.execute(user_str)
             cursor.execute(grant_str)
         except Exception as e:
             print("Error: " + e.args[1])
