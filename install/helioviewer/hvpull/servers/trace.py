@@ -12,15 +12,20 @@ class TRACEDataServer(DataServer):
         a full path is required to specify the location of the data."""
         DataServer.__init__(self, "/home/ireland/incoming/trace_incoming/v0.8/jp2", "TRACE")
         self.pause = datetime.timedelta(minutes=30)
+        self.measurements = ["WL", "171", "195", "284", "1216", "1550", "1600", "1700"]
+
+    def compute_groups(self):
+        groups = []
+        for measurement in self.measurements:
+            groups.append(','.join(["TRACE", measurement]))
+        return groups
 
     def compute_directories(self, start_date, end_date):
         """Computes a list of remote directories expected to contain files"""
         dirs = []
 
-        measurements = ["WL", "171", "195", "284", "1216", "1550", "1600", "1700"]
-
         for date in self.get_dates(start_date, end_date):
-            for measurement in measurements:
+            for measurement in self.measurements:
                 dirs.append(os.path.join(self.uri, "TRACE", date, measurement))
 
         return dirs

@@ -9,10 +9,8 @@ class UIODataServer(DataServer):
         """Defines the root directory of where the data is kept at UIO."""
         DataServer.__init__(self, "http://sdc.uio.no/vol/jpeg2000/", "UIO")
         self.pause = datetime.timedelta(minutes=15)
-        
-    def compute_directories(self, start_date, end_date):
-        """Computes a list of remote directories expected to contain files"""
-        dirs = []
+
+    def _get_xrt_groups(self):
         # XRT has two independent filter wheels that can be combined
         # to produce different types of images.  We construct the full
         # possible list from each filter wheel setting
@@ -24,14 +22,25 @@ class UIODataServer(DataServer):
         for fw1 in xrt_filter1:
             for fw2 in xrt_filter2:
                 xrt_measurements.append(fw1+'_'+fw2)
-        
+        return xrt_measurements
+
+    def compute_groups(self):
+        groups = []
+        for meas in self._get_xrt_groups():
+            groups.append(','.join(["XRT", str(meas)]))
+        return groups
+
+    def compute_directories(self, start_date, end_date):
+        """Computes a list of remote directories expected to contain files"""
+        dirs = []
+
         for date in self.get_dates(start_date, end_date):
             # XRT
-            for meas in xrt_measurements:
+            for meas in self._get_xrt_groups():
                 dirs.append(os.path.join(self.uri, "XRT", date, str(meas)))
-                
+
         return dirs
-        
+
     def get_starttime(self):
         """Default start time to use when retrieving data"""
         return datetime.datetime.utcnow() - datetime.timedelta(days=3)

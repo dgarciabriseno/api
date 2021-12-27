@@ -11,6 +11,9 @@ class HVKCORDataServer(DataServer):
         DataServer.__init__(self, "https://helioviewer.org/jp2/", "kcor")
         self.pause = datetime.timedelta(minutes=30)
 
+    def compute_groups(self):
+        return [','.join(["helioviewer","KCor"])]
+
     def compute_directories(self, start_date, end_date):
         """Computes a list of remote directories expected to contain files"""
         dirs = []
