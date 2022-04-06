@@ -12,8 +12,8 @@ class LMSALDataServer(DataServer):
         """Computes a list of remote directories expected to contain files"""
         dirs = []
         
-        aia_wavelengths = [4500, 304, 171, 1600, 193, 211, 335, 131, 94, 1700]
-        hmi_measurements = ["continuum", "magnetogram"]
+        aia_wavelengths = [304]
+        hmi_measurements = []
         
         for date in self.get_dates(start_date, end_date):
             # AIA
