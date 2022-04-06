@@ -469,14 +469,15 @@ class Movie_HelioviewerMovie {
      */
     private function _cleanUp() {
         $dir = $this->directory.'frames/';
+        error_log("Movie data saved to $dir", 3, "/var/www/api.helioviewer.org/log/movie_log.log");
 
-        // Clean up movie frame images that are no longer needed
-        if ( @file_exists($dir) ) {
-            foreach (glob("$dir*") as $image) {
-                @unlink($image);
-            }
-            @rmdir($dir);
-        }
+        // // Clean up movie frame images that are no longer needed
+        // if ( @file_exists($dir) ) {
+        //     foreach (glob("$dir*") as $image) {
+        //         @unlink($image);
+        //     }
+        //     @rmdir($dir);
+        // }
     }
 
     /**
