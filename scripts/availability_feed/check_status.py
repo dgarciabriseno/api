@@ -37,8 +37,8 @@ def check_status(status):
     check_for_lag("LASCO", LASCO_LAG_THRESHOLD_S, lasco_seconds_behind)
 
     # this coveres STEREO
-    secchi_seconds_behind = status['SECCHI']['secondsBehind']
-    check_for_lag("STEREO Source", SECCHI_LAG_THRESHOLD_S, secchi_seconds_behind)
+    #secchi_seconds_behind = status['SECCHI']['secondsBehind']
+    #check_for_lag("STEREO Source", SECCHI_LAG_THRESHOLD_S, secchi_seconds_behind)
     pass
 
 if __name__ == "__main__":
