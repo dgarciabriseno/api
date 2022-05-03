@@ -73,8 +73,9 @@ def reproject_image(source_image: str, dest_image: str):
     )
 
     reprojected_img = source_map.reproject_to(out_header)
-    reprojected_img.save("reprojected.fits", overwrite=True)
+    return reprojected_img
 
 if __name__ == "__main__":
     args = parse_args()
-    reproject_image(args.source, args.dest)
+    img = reproject_image(args.source, args.dest)
+    img.save("reprojected.fits", overwrite=True)
