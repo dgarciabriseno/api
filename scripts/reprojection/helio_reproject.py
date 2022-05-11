@@ -9,9 +9,6 @@ reprojecting it to the coordinates read from DEST_IMAGE. The result is
 a jp2 file that is SOURCE_IMAGE as seen from the coordinates of
 DEST_IMAGE.
 
-This module requires Image Magick installed on the system with jp2
-support.
-
 Usage: helio_reproject <source_image> <dest_image>
 """
 
@@ -20,7 +17,7 @@ import sys
 import pathlib
 import sunpy.map
 import astropy.units as u
-import subprocess
+import convert
 
 def fits_to_jp2(fits_file_name):
     """
@@ -79,3 +76,4 @@ if __name__ == "__main__":
     args = parse_args()
     img = reproject_image(args.source, args.dest)
     img.save("reprojected.fits", overwrite=True)
+    convert.fits_to_jp2("reprojected.fits")
