@@ -36,7 +36,13 @@ require_once HV_ROOT_DIR . '/../src/Helper/HelioviewerLayers.php';
 require_once HV_ROOT_DIR . '/../src/Helper/RegionOfInterest.php';
 require_once HV_ROOT_DIR . '/../src/Helper/Serialize.php';
 
+
 class Movie_HelioviewerMovie {
+
+    const STATUS_QUEUED = 0;
+    const STATUS_PROCESSING = 1;
+    const STATUS_COMPLETED = 2;
+    const STATUS_ERROR = 3;
 
     const CACHE_DIR = 'api/HelioviewerMovie';
     public $id;
@@ -173,6 +179,10 @@ class Movie_HelioviewerMovie {
         return $info;
     }
 
+    private function _markAsProcessing($format) {
+        $this->_db->markMovieAsProcessing($this->id, $format);
+        $this->DeleteFromCache($this->publicId);
+    }
 
     /**
      * Build the movie frames and movie
@@ -182,11 +192,12 @@ class Movie_HelioviewerMovie {
 
         date_default_timezone_set('UTC');
 
-        if ( $this->status == 2 ) {
+        if ( $this->status == Movie_HelioviewerMovie::STATUS_COMPLETED ||
+             $this->status == Movie_HelioviewerMovie::STATUS_PROCESSING) {
             return;
         }
 
-        $this->_db->markMovieAsProcessing($this->id, 'mp4');
+        $this->_markAsProcessing("mp4");
 
         try {
             $this->directory = $this->_buildDir();
@@ -240,7 +251,7 @@ class Movie_HelioviewerMovie {
 
             $statistics = new Database_Statistics();
             $statistics->log('buildMovie');
-	    $statistics->logRedis('buildMovie');
+        $statistics->logRedis('buildMovie');
         }
 
         $this->_cleanUp();
@@ -355,6 +366,7 @@ class Movie_HelioviewerMovie {
     private function _abort($msg, $procTime=0) {
         $this->_dbSetup();
         $this->_db->markMovieAsInvalid($this->id, $procTime);
+        $this->DeleteFromCache($this->publicId);
         $this->_cleanUp();
 
         throw new Exception('Unable to create movie '.$this->publicId.': '.$msg);
@@ -409,8 +421,8 @@ class Movie_HelioviewerMovie {
             'compress'  => false,
             'interlace' => false,
             'watermark' => $watermark,
-            'movie' 	=> true,
-            'size' 	    => $this->size,
+            'movie'     => true,
+            'size'         => $this->size,
             'followViewport' => $this->followViewport,
             'startDate' => $this->startDate,
             'reqStartDate' => $this->reqStartDate,
@@ -568,18 +580,18 @@ class Movie_HelioviewerMovie {
         // https://bugs.launchpad.net/helioviewer.org/+bug/979231
         $frameRate = round($this->frameRate, 1);
 
-		if($this->size == 1){
-	        $this->width = 1280;
-	        $this->height = 720;
+        if($this->size == 1){
+            $this->width = 1280;
+            $this->height = 720;
         }else if($this->size == 2){
-	        $this->width = 1920;
-	        $this->height = 1080;
+            $this->width = 1920;
+            $this->height = 1080;
         }else if($this->size == 3){
-	        $this->width = 2560;
-	        $this->height = 1440;
+            $this->width = 2560;
+            $this->height = 1440;
         }else if($this->size == 4){
-	        $this->width = 3840;
-	        $this->height = 2160;
+            $this->width = 3840;
+            $this->height = 2160;
         }
 
         // Create and FFmpeg encoder instance
@@ -602,6 +614,7 @@ class Movie_HelioviewerMovie {
         // Mark mp4 movie as completed
         $t2 = time();
         $this->_db->markMovieAsFinished($this->id, 'mp4', $t2 - $t1);
+        $this->DeleteFromCache($this->publicId);
 
 
         // Create a low-quality webm movie for in-browser use if requested
@@ -612,6 +625,7 @@ class Movie_HelioviewerMovie {
         // Mark movie as completed
         $t4 = time();
         $this->_db->markMovieAsFinished($this->id, 'webm', $t4 - $t3);
+        $this->DeleteFromCache($this->publicId);
     }
 
     /**
@@ -742,21 +756,21 @@ class Movie_HelioviewerMovie {
 
         $this->_setMovieDimensions();
 
-		if($this->size == 1){
-	        $width = 1280;
-	        $height = 720;
+        if($this->size == 1){
+            $width = 1280;
+            $height = 720;
         }else if($this->size == 2){
-	        $width = 1920;
-	        $height = 1080;
+            $width = 1920;
+            $height = 1080;
         }else if($this->size == 3){
-	        $width = 2560;
-	        $height = 1440;
+            $width = 2560;
+            $height = 1440;
         }else if($this->size == 4){
-	        $width = 3840;
-	        $height = 2160;
+            $width = 3840;
+            $height = 2160;
         }else{
-	        $width = $this->width;
-	        $height = $this->height;
+            $width = $this->width;
+            $height = $this->height;
         }
 
         // Update movie entry in database with new details

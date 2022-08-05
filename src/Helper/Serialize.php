@@ -130,7 +130,10 @@ class Helper_Serialize {
      */
     public function deleteFromCache() {
         // Delete the cache file.
-        unlink($this->_path.'/'.$this->_filename);
+		$path = $this->_path.'/'.$this->_filename;
+		if (file_exists($path)) {
+			unlink($this->_path.'/'.$this->_filename);
+		}
     }
 }
 ?>
