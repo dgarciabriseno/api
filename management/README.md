@@ -35,6 +35,9 @@ Contains scripts related to HEK event management.
 ## statistics
 Contains scripts related to statistics management.
 
+## positioning
+Contains scripts related to coordinate positioning for Helioviewer clients
+
 ## config.php
 Import into php scripts to load the configured Config.ini.
 This is a compatibility layer so that every script doesn't need to

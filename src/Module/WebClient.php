@@ -201,6 +201,35 @@ class Module_WebClient implements Module {
         }
     }
 
+
+    /**
+     * Gets the position of an image's observer via sunpy
+     */
+    public function getObserverPosition() {
+        // Get the img index database handle
+        include_once HV_ROOT_DIR.'/../src/Database/ImgIndex.php';
+        $imgIndex = new Database_ImgIndex();
+
+        // Query the id given by the user
+        $image = $imgIndex->getImageInformation($this->_params['id']);
+
+        // If the image is found:
+        if ($image) {
+            // Get the name of the file
+            $jp2Filepath = HV_JP2_DIR.$image['filepath'].'/'.$image['filename'];
+
+            // Extract the coordinates from the file
+            include_once HV_ROOT_DIR.'/../src/Helper/Coordinates.php';
+            $coords = Coordinates_FromJp2File($jp2Filepath);
+
+            // Return those coordinates to the caller
+            $this->_printJSON(json_encode(array('heeq' => $coords)));
+        } else {
+            throw new Exception(
+                'No image found for the specified ID', 17);
+        }
+    }
+
     /**
      * Returns a full jpeg2000 image as a tif
      */
@@ -211,6 +240,10 @@ class Module_WebClient implements Module {
 
         $imgIndex = new Database_ImgIndex();
         $image = $imgIndex->getImageInformation($this->_params['id']);
+        if (!$image) {
+            throw new Exception(
+                'No image found for the specified ID', 17);
+        }
         $jp2Filepath = HV_JP2_DIR.$image['filepath'].'/'.$image['filename'];
         $jp2 = new Image_JPEG2000_JP2Image(
             $jp2Filepath, $image['width'], $image['height'], 1
@@ -1486,6 +1519,11 @@ class Module_WebClient implements Module {
         case 'downloadImage':
             $expected = array(
                 'required' => array('id', 'scale')
+            );
+            break;
+        case 'getObserverPosition':
+            $expected = array(
+                'required' => array('id')
             );
             break;
 

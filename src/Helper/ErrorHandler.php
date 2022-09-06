@@ -15,6 +15,7 @@
  *   14 DATA        Failed to decode JPEG 2000 image data
  *   15 DATA        Error encountered while parsing image header tags
  *   16 DATA        Insufficient data found in requested time range
+ *   17 DATA        No image found for specified id
  *   20 REQUEST     No valid layers specified for request
  *   21 REQUEST     No overlap between ROI and data in one or more dimensions
  *   22 REQUEST     Invalid layers or quantity of layers specified
