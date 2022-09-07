@@ -4,31 +4,31 @@ import pickle
 import os
 from argparse import ArgumentParser
 
-SOCKET_FILE = "/tmp/heeq_server.sock"
 PROGRAM_DESCRIPTION = "Client program for getting HEEQ coordinates from the HEEQ Server"
 # Set arguments to be passed to parser.add_argument here.
 # Format is ([positional_args], {keyword_args: value})
 PROGRAM_ARGS = [
-    (["-j", "--jp2"], {'help': 'JP2 File to get coordinates from', 'type': str}),
+    (["-s", "--socket"], {'help': 'Path to server socket (Required with -j or -k)', 'dest': 'socket_file', 'type': str}),
+    (["-j", "--jp2"], {'help': 'JP2 File to get coordinates from ', 'type': str}),
     (["-k", "--kill"], {'action': 'store_true', 'dest': 'kill', 'help': 'Kills the HEEQ server'}),
     (["-t", "--time"], {'action': 'store_true', 'dest': 'enable_time', 'help': 'Print how long it takes to get results from the server'})
 ]
 
-def kill_server():
+def kill_server(socket_file):
     """
     Sends the kill command to the HEEQ server, for debug purposes generally.
     """
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-        s.connect(SOCKET_FILE)
+        s.connect(socket_file)
         s.sendall(b'kill')
 
-def print_coordinates(jp2_file: str, enable_timer: bool):
+def print_coordinates(jp2_file: str, socket_file: str, enable_timer: bool):
     """
     Requests HEEQ coordinates for the given jp2_file from the server
     """
     start = time.time()
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-        s.connect(SOCKET_FILE)
+        s.connect(socket_file)
         s.sendall(bytearray(jp2_file, 'utf-8'))
         result = s.recv(1024)
         data = pickle.loads(result)
@@ -38,11 +38,17 @@ def print_coordinates(jp2_file: str, enable_timer: bool):
         print(data)
 
 # All args set will be passed as keyword args to main
-def main(jp2, kill, enable_time):
+def main(jp2, kill, enable_time, socket_file):
     if (kill):
-        kill_server()
+        if (socket_file is None):
+            print("You must provide the path to the server socket")
+            exit(1)
+        kill_server(socket_file)
     elif (jp2 is not None):
-        print_coordinates(jp2, enable_time)
+        if (socket_file is None):
+            print("You must provide the path to the server socket")
+            exit(1)
+        print_coordinates(jp2, socket_file, enable_time)
     pass
 
 # Reference: https://docs.python.org/3/library/argparse.html

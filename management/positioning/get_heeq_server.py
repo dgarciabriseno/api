@@ -4,11 +4,19 @@ To overcome this bottleneck, get_heeq is implemented as a miniature client/serve
 """
 
 from get_heeq import get_heeq_coordinates_from_jp2_file
+from argparse import ArgumentParser
 import socket
 import os
 import pickle
 
-SOCKET_FILE = "/tmp/heeq_server.sock"
+DEFAULT_SOCKET_FILE = "/tmp/heeq_server.sock"
+PROGRAM_DESCRIPTION = "HEEQ Server for quickly getting HEEQ coordinates from jp2 files"
+
+# Set arguments to be passed to parser.add_argument here.
+# Format is ([positional_args], {keyword_args: value})
+PROGRAM_ARGS = [
+    (['-s', '--socket'], {'help': 'Path to socket file to use', 'dest': 'socket_file'})
+]
 
 def attempt_to_get_coordinates_from_file(jp2_file: str):
     """
@@ -23,9 +31,9 @@ def attempt_to_get_coordinates_from_file(jp2_file: str):
     except Exception as e:
         return str(e)
 
-def enable_server():
+def enable_server(socket_file):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-        s.bind(SOCKET_FILE)
+        s.bind(socket_file)
         s.listen(2000)
         running = True
         while running:
@@ -43,7 +51,23 @@ def enable_server():
                         conn.sendall(pickle.dumps(result))
                     break
 
-    os.remove(SOCKET_FILE)
+    os.remove(socket_file)
+
+# All args set will be passed as keyword args to main
+def main(socket_file):
+    if (socket_file is None):
+        print("Socket file not specified, using {}".format(DEFAULT_SOCKET_FILE))
+        socket_file = DEFAULT_SOCKET_FILE
+    enable_server(socket_file)
+    pass
+
+# Reference: https://docs.python.org/3/library/argparse.html
+def parse_args():
+    parser = ArgumentParser(description=PROGRAM_DESCRIPTION)
+    for args in PROGRAM_ARGS:
+        parser.add_argument(*args[0], **args[1])
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    enable_server()
+    args = parse_args()
+    main(**vars(args))
