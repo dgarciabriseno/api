@@ -11,11 +11,15 @@ PROGRAM_ARGS = [
 
 
 def main(jp2: str):
-    jp2_map = get_jp2_map(jp2)
-    heeq_coords = get_heeq_coordinates_from_jp2(jp2_map)
+    heeq_coords = get_heeq_coordinates_from_jp2_file(jp2)
     print("HEEQ Coords (km): " + str(heeq_coords))
     
     print("Stonyhurst Coords: " + str(jp2_map.observer_coordinate))
+
+def get_heeq_coordinates_from_jp2_file(jp2: str):
+    jp2_map = get_jp2_map(jp2)
+    heeq_coords = get_heeq_coordinates_from_jp2(jp2_map)
+    return heeq_coords
 
 def get_jp2_map(jp2: str):
     return Map(jp2)
