@@ -30,7 +30,7 @@ function _extractHeeqCoordsFromResult($cmd_output) {
  */
 function Coordinates_FromJp2File($jp2_file) {
     $heeq_script = HV_ROOT_DIR . "/../management/positioning/get_heeq_client.py";
-    $cmd = HV_PYTHON_PATH . " " . $heeq_script . " -j" . escapeshellcmd($jp2_file) . " 2>&1";
+    $cmd = HV_PYTHON_PATH . " " . $heeq_script . " -j" . escapeshellcmd($jp2_file) . " -s " . HV_HEEQ_SOCKET . " 2>&1";
     $result = shell_exec($cmd);
     return _extractHeeqCoordsFromResult($result);
 }
