@@ -41,4 +41,18 @@ final class JP2ImageXMLBoxTest extends TestCase
         $this->assertNotEquals($xmlBox->getDSun(), HV_CONSTANT_AU);
     }
 
+    public function test_getRsun(): void
+    {
+        $test_file = HV_JP2_DIR . "/HMI/2022/08/02/magnetogram/2022_08_02__10_47_53_000__SDO_HMI_HMI_magnetogram.jp2";
+        if (!file_exists($test_file)) {
+            $this->markTestSkipped("File to test not present on this system");
+            return;
+        }
+
+        $xmlBox = new Image_JPEG2000_JP2ImageXMLBox($test_file);
+        $rsun = $xmlBox->getRSun();
+        echo "---\n";
+        echo $rsun;
+    }
+
 }
