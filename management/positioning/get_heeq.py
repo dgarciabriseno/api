@@ -1,6 +1,9 @@
 from argparse import ArgumentParser
 from sunpy.map import Map
+from astropy.coordinates.sky_coordinate import SkyCoord
+import astropy.units as u
 import math
+import pickle
 
 PROGRAM_DESCRIPTION = "Extract observer's HEEQ coordinates from a jp2 file via sunpy"
 
@@ -9,12 +12,17 @@ PROGRAM_ARGS = [
     (['jp2'], {'type': str, 'help': 'JP2 file to extract coordinates from'})
 ]
 
+def load_reference_point():
+    ref = None
+    with open("ref_point.pickle", "rb") as fp:
+        ref = pickle.load(fp)
+    return ref
+
+REFERENCE_POINT = load_reference_point()
 
 def main(jp2: str):
     heeq_coords = get_heeq_coordinates_from_jp2_file(jp2)
     print("HEEQ Coords (km): " + str(heeq_coords))
-    
-    print("Stonyhurst Coords: " + str(jp2_map.observer_coordinate))
 
 def get_heeq_coordinates_from_jp2_file(jp2: str):
     jp2_map = get_jp2_map(jp2)
@@ -31,7 +39,8 @@ def get_heeq_coordinates_from_jp2(jp2_map: Map):
     return convert_skycoords_to_heeq(jp2_map.observer_coordinate)
 
 
-def convert_skycoords_to_heeq(coords):
+def convert_skycoords_to_heeq(base_coords):
+    coords = base_coords.transform_to(REFERENCE_POINT)
     longitude = dms_to_radians(coords.lon.dms)
     latitude = dms_to_radians(coords.lat.dms)
     radius = coords.radius.to_value("km")
