@@ -4,6 +4,10 @@ from astropy.coordinates.sky_coordinate import SkyCoord
 import astropy.units as u
 import math
 import pickle
+import sys
+
+sys.path.insert(0, "../../install/helioviewer/")
+import jp2parser
 
 PROGRAM_DESCRIPTION = "Extract observer's HEEQ coordinates from a jp2 file via sunpy"
 
@@ -30,7 +34,8 @@ def get_heeq_coordinates_from_jp2_file(jp2: str):
     return heeq_coords
 
 def get_jp2_map(jp2: str):
-    return Map(jp2)
+    parser = jp2parser.JP2parser(jp2)
+    return Map(parser.read_header_only_but_still_use_sunpy_map())
 
 def get_heeq_coordinates_from_jp2(jp2_map: Map):
     """
