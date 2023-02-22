@@ -226,7 +226,7 @@ class Movie_HelioviewerMovie {
             }
         }
         catch (Exception $e) {
-            $this->_abort('Error encountered during movie frame compilation: ' . $e->getMessage() );
+            $this->_abortWithException('Error encountered during movie frame compilation', $e);
         }
 
         $t3 = time();
@@ -237,9 +237,9 @@ class Movie_HelioviewerMovie {
         }
         catch (Exception $e) {
             $t4 = time();
-            $this->_abort('Error encountered during video encoding. ' .
-                'This may be caused by an FFmpeg configuration issue, ' .
-                'or by insufficient permissions in the cache.', $t4 - $t3);
+            $this->_abortWithException('Error encountered during video encoding. ' .
+                    'This may be caused by an FFmpeg configuration issue, ' .
+                    'or by insufficient permissions in the cache.', $t4 - $t3, $e);
         }
 
         // Log buildMovie in statistics table
@@ -353,6 +353,19 @@ class Movie_HelioviewerMovie {
         @closedir($handle);
 
         return ($newest_frame>0) ? (int)$newest_frame : null;
+    }
+
+    /**
+     * Cancels movie request
+     *
+     * @param string $msg Error message
+     * @param Exception $exception Exception that caused the abort
+     */
+    private function _abortWithException($msg, Exception $exception) {
+        $new_msg = $msg . "\nException: " . $exception->getMessage() .
+                          "\nError occurred at " . $exception->getFile() . ":" . $exception->getLine() .
+                          "\nTrace: " . $exception->getTraceAsString();
+        $this->_abort($new_msg);
     }
 
     /**
