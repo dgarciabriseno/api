@@ -17,10 +17,10 @@ jobs:
     - uses: actions/checkout@v3
     - uses: addnab/docker-run-action@v3
       with:
-      image: dgarciabriseno/helioviewer.org
-      #  -v ${{ github.workspace }}:/work -e ABC=123
-      options: -p 127.0.0.1:8080:80 -p 127.0.0.1:8081:81 -v ${{ github.workspace }}:/home/helioviewer/api.helioviewer.org -d
-      run: |
-        echo "Running Script"
-        composer install
-        composer run-script test
+        image: dgarciabriseno/helioviewer.org
+        #  -v ${{ github.workspace }}:/work -e ABC=123
+        options: -p 127.0.0.1:8080:80 -p 127.0.0.1:8081:81 -v ${{ github.workspace }}:/home/helioviewer/api.helioviewer.org -d
+        run: |
+          echo "Running Script"
+          composer install
+          composer run-script test
