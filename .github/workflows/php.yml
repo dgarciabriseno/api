@@ -12,24 +12,15 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    container:
-      image: dgarciabriseno/helioviewer.org
-      options: --user root
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
+    - uses: addnab/docker-run-action@v3
       with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
-
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
-
-    - name: Run test suite
-      run: composer run-script test
+      image: dgarciabriseno/helioviewer.org
+      #  -v ${{ github.workspace }}:/work -e ABC=123
+      options: -p 127.0.0.1:8080:80 -p 127.0.0.1:8081:81 -v ${{ github.workspace }}:/home/helioviewer/api.helioviewer.org -d
+      run: |
+        echo "Running Script"
+        composer install
+        composer run-script test
