@@ -25,7 +25,7 @@ final class WebClientTest extends TestCase
         // The bad layer data that has been observed in the logs
         $params = array(
           "action" => "getTile",
-          "id" => "9894", // TODO: Get dynamically, any image id will work.
+          "id" => "70", // TODO: Get dynamically, any image id will work. 70 is expected to work in the base container.
           "imageScale" => "1.21022044",
           "x" => "0",
           "y" => "-1",
