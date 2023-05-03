@@ -2,7 +2,7 @@ name: Build and Test
 
 on:
   push:
-    branches: [ "master", "fix-tests" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
@@ -12,7 +12,9 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    container: dgarciabriseno/helioviewer.org
+    container:
+      image: dgarciabriseno/helioviewer.org
+      options: --user root
 
     steps:
     - uses: actions/checkout@v3
