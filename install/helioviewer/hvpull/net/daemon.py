@@ -913,7 +913,8 @@ class ImageRetrievalDaemon:
             "iris": "IRISDataServer",
             "hv_iris": "HvIRISDataServer",
             "halpha": "GongDataServer",
-            "gong_mag": "GongMagnetogramDataServer"
+            "gong_mag": "GongMagnetogramDataServer",
+            "farside": "GongFarsideDataServer"
         }
 
     @classmethod
