@@ -97,9 +97,10 @@ class JP2parser:
             # measurement is a @property function which tries to convert the WAVELNTH field in the fits header to an astropy Quantity.
             # This fails on GONG Magnetograms because "magnetogram" is written into to the WAVELNTH field in the header.
             # Handle this specific case here.
-            if imageData.meta['wavelnth'] == "magnetogram":
-                measurement = "magnetogram"
+            if imageData.meta['wavelnth'] in ['magnetogram', 'farside']:
+                measurement = imageData.meta['wavelnth']
             # If something else happened other than what is described in the comment above, then re-raise the error as it should be looked into.
+            # The solution might just be to add the value to the magnetogram/farside array above, but better to have someone review it first.
             else:
                 raise e
         # Convert Yohkoh measurements to be helioviewer compatible
