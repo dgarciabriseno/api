@@ -1437,7 +1437,7 @@ class Image_Composite_HelioviewerCompositeImage {
         $text->setTextAntialias(true);
         $text->setStrokeWidth(0);
         $imagickImage->annotateImage($text,     $leftPad, $lowerPad, 0, $nameCmd);
-        $imagickImage->annotateImage($text, 120+$leftPad, $lowerPad, 0, $timeCmd);
+        $imagickImage->annotateImage($text, 130+$leftPad, $lowerPad, 0, $timeCmd);
 
         // Cleanup
         $black->destroy();
