@@ -912,7 +912,8 @@ class ImageRetrievalDaemon:
             "suvi": "SUVIDataServer",
             "iris": "IRISDataServer",
             "hv_iris": "HvIRISDataServer",
-            "halpha": "GongDataServer"
+            "halpha": "GongDataServer",
+            "gong_mag": "GongMagnetogramDataServer"
         }
 
     @classmethod
