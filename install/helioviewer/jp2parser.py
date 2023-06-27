@@ -91,7 +91,17 @@ class JP2parser:
         image['instrument'] = imageData.instrument.split(" ")[0]
         image['detector'] = imageData.detector
         # Remove explicit units from the measurement
-        measurement = str(imageData.measurement).replace(".0 Angstrom", "").replace(".0 nm","").replace(".0", "")
+        try:
+            measurement = str(imageData.measurement).replace(".0 Angstrom", "").replace(".0 nm","").replace(".0", "")
+        except TypeError as e:
+            # measurement is a @property function which tries to convert the WAVELNTH field in the fits header to an astropy Quantity.
+            # This fails on GONG Magnetograms because "magnetogram" is written into to the WAVELNTH field in the header.
+            # Handle this specific case here.
+            if imageData.meta['wavelnth'] == "magnetogram":
+                measurement = "magnetogram"
+            # If something else happened other than what is described in the comment above, then re-raise the error as it should be looked into.
+            else:
+                raise e
         # Convert Yohkoh measurements to be helioviewer compatible
         if image['observatory'] == "Yohkoh":
             if measurement == "AlMg":
