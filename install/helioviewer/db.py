@@ -866,6 +866,7 @@ def create_redis_stats_table(cursor):
         `action`         varchar(32) NOT NULL,
         `count`          int unsigned NOT NULL,
         `device`         VARCHAR(64) DEFAULT 'x',
+        PRIMARY KEY (`id`),
         INDEX dates (`datetime`),
         INDEX devices (`device`, `action`, `datetime`),
         INDEX actions (`action`, `datetime`)
