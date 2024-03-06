@@ -143,7 +143,8 @@ class Module_WebClient implements Module {
         $response = array_merge(array(
             'id'   => $image['id'],
             'date' => $image['date'],
-            'name' => $image['name']
+            'name' => $image['name'],
+            'file' => $image['filepath'].'/'.$image['filename']
         ), $xmlBox);
 
         // Print result
@@ -1141,7 +1142,7 @@ class Module_WebClient implements Module {
         // Output result
         $this->_printJSON(json_encode($response));
      }
-     
+
     /**
      * Returns an embeddable image showing LASCO C2/C3 data leading up to
      * the selected eclipse.
@@ -1177,7 +1178,7 @@ class Module_WebClient implements Module {
         // Create the base screenshot image
         include_once HV_ROOT_DIR.'/../src/Image/Composite/HelioviewerScreenshot.php';
         $screenshot = new Image_Composite_HelioviewerScreenshot(
-            $layers, $events, false, false, $celestialBodies, false, 'earth', 0, 0, $now_str, $roi, 
+            $layers, $events, false, false, $celestialBodies, false, 'earth', 0, 0, $now_str, $roi,
             ['grayscale' => true, 'eclipse' => true, 'moon' => $this->_options['moon']]
         );
         $screenshot->display();
