@@ -141,9 +141,12 @@ class Image_Composite_HelioviewerCompositeImage {
     private function _buildCompositeImageLayers() {
         $imageLayers = array();
 
+        // Compute the region of interest to use for each image
+        $regions = $this->_computeROIs();
+
         // Find the closest image for each layer, add the layer information
         // string to it
-        foreach ( $this->layers->toArray() as $layer ) {
+        foreach ( $this->layers->toArray() as $index => $layer ) {
 	        if($this->switchSources){
 				if($layer['sourceId'] == 13 && strtotime($this->date) < strtotime('2010-06-02 00:05:39')){
 					$layer['sourceId'] = 3;
@@ -173,7 +176,7 @@ class Image_Composite_HelioviewerCompositeImage {
 				}
 			}
 
-            $image = $this->_buildImageLayer($layer);
+            $image = $this->_buildImageLayer($layer, $regions[$index]);
             array_push($imageLayers, $image);
         }
 
@@ -187,13 +190,54 @@ class Image_Composite_HelioviewerCompositeImage {
     }
 
     /**
+     * Computes the ROI to use for each image layer.
+     *
+     * By default, the provided ROI is used, which is whatever the client has selected.
+     * however some image sources are rotated on the client, which means the selection
+     * may be different than the desired ROI. To accomodate for this, any images
+     * that are rotated on the client (defined by HV_ROTATE_SOURCES in Config.ini)
+     * have their ROI rotated to the correct position here.
+     */
+    private function _computeROIs() {
+        $regions = [];
+        foreach ( $this->layers->toArray() as $layer ) {
+            // By default, the provided roi is used
+            $roi = $this->roi;
+            // If the image source is rotated, then update the ROI to account
+            // for the rotation.
+            if (in_array($layer['sourceId'], HV_ROTATE_SOURCES)) {
+                $image = $this->db->getClosestData($this->date, $layer['sourceId']);
+                $jp2Filepath = HV_JP2_DIR.$image['filepath'].'/'.$image['filename'];
+                $meta = $this->db->extractJP2MetaInfo($jp2Filepath);
+                $roi = $this->roi->rotate($meta["rotation"]);
+            }
+            array_push($regions, $roi);
+        }
+
+        // Enforce that all regions of interest are the same width and height.
+        $widths = array_map(function ($r) { return $r->getWidth(); }, $regions);
+        $maxWidth = max($widths);
+
+        $heights = array_map(function ($r) { return $r->getHeight(); }, $regions);
+        $maxHeight = max($heights);
+
+        foreach ($regions as $roi) {
+            $roi->setWidth($maxWidth);
+            $roi->setHeight($maxHeight);
+        }
+
+        return $regions;
+    }
+
+    /**
      * Builds a single layer image
      *
      * @param array $layer Associative array containing the layer properties
+     * @param Helper_RegionOfInterest $roi Region of interest to extract from the jp2 image
      *
      * @return object A HelioviewerImage instance (e.g. AIAImage or LASCOImage)
      */
-    private function _buildImageLayer($layer) {
+    private function _buildImageLayer($layer, $roi) {
         $image = $this->db->getClosestData($this->date, $layer['sourceId']);
 
         // Instantiate a JP2Image
@@ -309,7 +353,7 @@ class Image_Composite_HelioviewerCompositeImage {
 		}
 
         return new $classname(
-            $jp2, $tmpFile, $this->roi, $layer['uiLabels'],
+            $jp2, $tmpFile, $roi, $layer['uiLabels'],
             $offsetX, $offsetY, $options, $image['sunCenterOffsetParams'], $image['name'] );
     }
 
