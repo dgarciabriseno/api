@@ -11,7 +11,6 @@ from sunpy.util.xml import xml_to_dict
 from sunpy.io.header import FileHeader
 from sunpy.map.mapbase import MapMetaValidationError
 from glymur import Jp2k
-from sunpy.util.xml import xml_to_dict
 
 __HV_CONSTANT_RSUN__ = 959.644
 __HV_CONSTANT_AU__ = 149597870700
@@ -359,6 +358,69 @@ class JP2parser:
 
         return layeringOrder
 
+    def applyRotation(self):
+        """
+        Applies the rotation defined in the metadata, then updates the metadata
+        to have a rotation of 0.
+
+        Note: Kakadu (the program used to extract regions of jp2 images) does not support
+        rotating images by arbitrary amounts. Therefore we can't rotate images
+        on the client side without a major refactor of how screenshots work
+        (Current process is as simple as extracting selected region). If the images
+        were rotated, then we would have to read the entire image, rotate it,
+        and then cut out the desired region, which defeats the purpose of being
+        able to cut out sections of the image.
+
+        Thus instead, we do the intensive process of rotating the image when
+        the data is ingested into Helioviewer.
+        """
+        try:
+            # Get rotation details
+            imageMap = self.getImageMap()
+            rotation = imageMap.meta['CROTA']
+
+            # Load the jp2 image.
+            jp2 = Jp2k(self._filepath)
+
+            # Modify the WCS information so that rotation becomes 0, and
+            # the reference pixel is updated to the new location
+            xml_box = [box for box in jp2.box if box.box_id == 'xml ']
+            # Modify it such that rotation is set to 0.
+            xml_box[0].xml.find('fits').find('CROTA').text = '0'
+            # Compute the where the reference pixel will be after rotating the image.
+            width  = int(xml_box[0].xml.find('fits').find('NAXIS1').text)
+            half_width = width / 2
+            height = int(xml_box[0].xml.find('fits').find('NAXIS2').text)
+            half_height = height / 2
+            # Get refpixel location relative to the center of the image (the axis of rotation)
+            x = float(xml_box[0].xml.find('fits').find('CRPIX1').text) - half_width
+            y = float(xml_box[0].xml.find('fits').find('CRPIX2').text) - half_height
+            # Perform rotation
+            import math
+            radians = rotation * math.pi / 180
+            cosine = math.cos(radians)
+            sine = math.sin(radians)
+            x = (x * cosine) - (y * sine)
+            y = (x * sine)   + (y * cosine)
+            # Reapply center offset
+            x += half_width
+            y += half_height
+            # Write new refpixel location to the metadata
+            xml_box[0].xml.find('fits').find('CRPIX1').text = "%0.2f" % x
+            xml_box[0].xml.find('fits').find('CRPIX2').text = "%0.2f" % y
+
+
+            # Rotate the image
+            import scipy
+            # I hope we have enough memory!
+            rotated = scipy.ndimage.rotate(jp2[:], rotation, reshape=False)
+            # Write out the rotated image with updated xml data
+            rotatedJp2 = Jp2k(self._filepath, rotated)
+            rotatedJp2.append(xml_box[0])
+
+        except Exception as e:
+            print("Failed to apply rotation: " + str(e))
+
     def getImageRotationStatus(self):
         """Returns true if the image was rotated 180 degrees
 
@@ -372,7 +434,7 @@ class JP2parser:
         try:
             rotation = self._data['CROTA1']
             if abs(rotation) > 170:
-                return true
+                return True
         except Exception as e:
             # AIA, EIT, and MDI do their own rotation
             return False
