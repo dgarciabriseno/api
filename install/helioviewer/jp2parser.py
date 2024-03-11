@@ -6,6 +6,7 @@ JPEG 2000 Image XML Box parser class
 import sys
 from xml.etree import cElementTree as ET
 import numpy as np
+import astropy.units as u
 from sunpy.map import Map
 from sunpy.util.xml import xml_to_dict
 from sunpy.io.header import FileHeader
@@ -22,6 +23,15 @@ class JP2parser:
     def __init__(self, path):
         """Main application"""
         self._filepath = path
+        self._map = None
+
+    @property
+    def map(self):
+        """
+        """
+        if self._map is None:
+            self._map = self.getImageMap()
+        return self._map
 
     def getImageMap(self):
         try:
@@ -36,7 +46,7 @@ class JP2parser:
         metadata and create an object.
         """
 
-        imageData = self.getImageMap()
+        imageData = self.map
         image = dict()
 
         #Calculate sun position/size/scale
@@ -375,50 +385,19 @@ class JP2parser:
         the data is ingested into Helioviewer.
         """
         try:
-            # Get rotation details
-            imageMap = self.getImageMap()
-            rotation = imageMap.meta['CROTA']
-
-            # Load the jp2 image.
-            jp2 = Jp2k(self._filepath)
-
-            # Modify the WCS information so that rotation becomes 0, and
-            # the reference pixel is updated to the new location
-            xml_box = [box for box in jp2.box if box.box_id == 'xml ']
-            # Modify it such that rotation is set to 0.
-            xml_box[0].xml.find('fits').find('CROTA').text = '0'
-            # Compute the where the reference pixel will be after rotating the image.
-            width  = int(xml_box[0].xml.find('fits').find('NAXIS1').text)
-            half_width = width / 2
-            height = int(xml_box[0].xml.find('fits').find('NAXIS2').text)
-            half_height = height / 2
-            # Get refpixel location relative to the center of the image (the axis of rotation)
-            x = float(xml_box[0].xml.find('fits').find('CRPIX1').text) - half_width
-            y = float(xml_box[0].xml.find('fits').find('CRPIX2').text) - half_height
-            # Perform rotation
-            import math
-            radians = rotation * math.pi / 180
-            cosine = math.cos(radians)
-            sine = math.sin(radians)
-            x = (x * cosine) - (y * sine)
-            y = (x * sine)   + (y * cosine)
-            # Reapply center offset
-            x += half_width
-            y += half_height
-            # Write new refpixel location to the metadata
-            xml_box[0].xml.find('fits').find('CRPIX1').text = "%0.2f" % x
-            xml_box[0].xml.find('fits').find('CRPIX2').text = "%0.2f" % y
-
-
-            # Rotate the image
-            import scipy
-            # I hope we have enough memory!
-            rotated = scipy.ndimage.rotate(jp2[:], rotation, reshape=False)
-            # Write out the rotated image with updated xml data
-            rotatedJp2 = Jp2k(self._filepath, rotated)
-            rotatedJp2.append(xml_box[0])
-
+            # Rotate the image with sunpy
+            img = Map(self._filepath)
+            rotated = img.rotate(img.meta["crota"] * u.deg, missing=0)
+            # sunpy doesn't update the naxis fields if the width and height
+            # change, but we need this since we use the naxis fields to
+            # determine the width and height of the image without reading all
+            # the data.
+            rotated.meta["naxis1"] = rotated.data.shape[1]
+            rotated.meta["naxis2"] = rotated.data.shape[0]
+            rotated.save(self._filepath)
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             print("Failed to apply rotation: " + str(e))
 
     def getImageRotationStatus(self):
