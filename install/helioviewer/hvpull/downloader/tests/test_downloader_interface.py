@@ -25,7 +25,7 @@ def test_DownloaderStopsProcessingUponFailure():
     """
     test_queue = Queue()
     fake_downloader = FakeDownloader("/test", test_queue)
-    fake_downloader.setDaemon(True)
+    fake_downloader.daemon = True
     fake_downloader.start()
     fake_downloader.set_failure_limit(10)
 

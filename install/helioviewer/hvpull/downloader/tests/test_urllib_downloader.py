@@ -7,7 +7,7 @@ def test_urllib_downloader():
     """
     queue = Queue()
     downloader = URLLibDownloader("/tmp", queue)
-    downloader.setDaemon(True)
+    downloader.daemon = True
     downloader.start()
 
     # Put 10 pieces of junk in the queue to cause a failure
