@@ -7,3 +7,5 @@ such as data coverage stats.
 Updates the data for the data and event timelines. This is technically
 an alias for `import_events.php -u`.
 
+## list_cadence.php
+Computes mean time between images for each data source.
