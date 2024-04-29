@@ -129,7 +129,8 @@ function compute_statistics(int $source, string $name) {
 
     // Print out the results
     echo "Results for source $source: $name\n";
-    echo "   Minimum cadence: $min\n";
-    echo "   Maximum cadence: $max\n";
-    echo "      Mean cadence: $mean\n";
+    echo "   Number of samples: $num_rows\n";
+    echo "     Minimum cadence: $min\n";
+    echo "     Maximum cadence: $max\n";
+    echo "        Mean cadence: $mean\n";
 }
