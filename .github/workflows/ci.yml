@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Setup Helioviewer Docker environment
-      uses: Helioviewer-Project/helioviewer.org-docker/.github/actions/helioviewer-docker@main
+      uses: dgarciabriseno/helioviewer.org-docker/.github/actions/helioviewer-docker@main
       with:
         api-ref: ${{ github.ref }}
 
