@@ -18,6 +18,7 @@ jobs:
       uses: dgarciabriseno/helioviewer.org-docker/.github/actions/helioviewer-docker@gh-runner
       with:
         docker-repo: dgarciabriseno/helioviewer.org-docker
+        api-repo: dgarciabriseno/api
         api-ref: ${{ github.ref }}
 
     - name: Disable movie builder (required for tests)
