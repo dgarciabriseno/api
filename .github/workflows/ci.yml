@@ -60,6 +60,7 @@ jobs:
     - name: Run Playwright tests
       uses: dgarciabriseno/helioviewer.org-tests/.github/actions/playwright-test@gh-runner
       with:
+        test-repo: dgarciabriseno/helioviewer.org-tests
         api-ref: ${{ github.sha }}
         shard-index: ${{ matrix.shardIndex }}
         shard-total: ${{ matrix.shardTotal }}
