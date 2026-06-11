@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Run Playwright tests
-      uses: Helioviewer-Project/helioviewer.org-tests/.github/actions/playwright-test@main
+      uses: dgarciabriseno/helioviewer.org-tests/.github/actions/playwright-test@gh-runner
       with:
         api-ref: ${{ github.sha }}
         shard-index: ${{ matrix.shardIndex }}
