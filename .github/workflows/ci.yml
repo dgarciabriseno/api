@@ -14,8 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Setup Helioviewer Docker environment
-      uses: dgarciabriseno/helioviewer.org-docker/.github/actions/helioviewer-docker@main
+      # TODO: Revert this back to Helioviewer-Project
+      uses: dgarciabriseno/helioviewer.org-docker/.github/actions/helioviewer-docker@gh-runner
       with:
+        docker-repo: dgarciabriseno/helioviewer.org-docker
         api-ref: ${{ github.ref }}
 
     - name: Disable movie builder (required for tests)
