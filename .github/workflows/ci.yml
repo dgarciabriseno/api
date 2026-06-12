@@ -14,8 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Setup Helioviewer Docker environment
-      uses: Helioviewer-Project/helioviewer.org-docker/.github/actions/helioviewer-docker@main
+      # TODO: Revert this back to Helioviewer-Project
+      uses: dgarciabriseno/helioviewer.org-docker/.github/actions/helioviewer-docker@gh-runner
       with:
+        docker-repo: dgarciabriseno/helioviewer.org-docker
+        api-repo: dgarciabriseno/api
         api-ref: ${{ github.ref }}
 
     - name: Disable movie builder (required for tests)
@@ -55,8 +58,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Run Playwright tests
-      uses: Helioviewer-Project/helioviewer.org-tests/.github/actions/playwright-test@main
+      uses: dgarciabriseno/helioviewer.org-tests/.github/actions/playwright-test@gh-runner
       with:
+        docker-repo: dgarciabriseno/helioviewer.org-docker
+        docker-ref: gh-runner
+        test-repo: dgarciabriseno/helioviewer.org-tests
+        test-ref: gh-runner
+        api-repo: dgarciabriseno/api
         api-ref: ${{ github.sha }}
         shard-index: ${{ matrix.shardIndex }}
         shard-total: ${{ matrix.shardTotal }}
@@ -74,6 +82,6 @@ jobs:
         path: 'helioviewer.org-tests'
 
     - name: Merge Playwright reports
-      uses: Helioviewer-Project/helioviewer.org-tests/.github/actions/playwright-merge-reports@main
+      uses: dgarciabriseno/helioviewer.org-tests/.github/actions/playwright-merge-reports@gh-runner
       with:
         test-repo-path: 'helioviewer.org-tests'
