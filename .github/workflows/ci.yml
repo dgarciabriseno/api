@@ -79,6 +79,6 @@ jobs:
         path: 'helioviewer.org-tests'
 
     - name: Merge Playwright reports
-      uses: dgarciabriseno/helioviewer.org-tests/.github/actions/playwright-merge-reports@main
+      uses: dgarciabriseno/helioviewer.org-tests/.github/actions/playwright-merge-reports@gh-runner
       with:
         test-repo-path: 'helioviewer.org-tests'
