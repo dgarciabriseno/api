@@ -28,7 +28,7 @@ tags:
   - name: Official Clients
     description: Endpoints intended for use by official Helioviewer clients
   - name: Solar Features & Events
-    description: Solar feature and event data from HEK and DONKI
+    description: Solar feature and event data from HEK, CCMC, and RHESSI
   - name: YouTube
     description: Share movies to YouTube
   - name: Website
@@ -1261,8 +1261,9 @@ paths:
       tags: [Solar Features & Events]
       summary: Get solar feature and event data
       description: |
-        Returns a list of HEK events in the Helioviewer event format.
-        Event-specific data conforms to the HEK Event Specification.
+        Returns a list of solar feature/event data in the Helioviewer event
+        format, aggregated from HEK, CCMC, and RHESSI. Event-specific data
+        conforms to the HEK Event Specification.
 
         When ``format=simpletree`` is requested, that flat payload is re-shaped into
         a single-level map whose keys are ``SOURCE>>Label`` strings (one per known
@@ -1302,10 +1303,10 @@ paths:
           required: false
           description: >
             Comma-separated external data sources to query. Current options:
-            HEK, DONKI. If omitted, all sources are queried.
+            HEK, CCMC, RHESSI. If omitted, all sources are queried.
           schema:
             type: string
-            example: "HEK,DONKI"
+            example: "HEK,CCMC,RHESSI"
         - name: format
           in: query
           required: false
