@@ -777,6 +777,11 @@ paths:
         `height`). By default returns a JSON object with a screenshot `id`;
         set `display=true` to receive the PNG binary directly.
 
+        **MCP note:** Leave `display` unset (or `false`) so `takeScreenshot`
+        returns the JSON `{id}` object. `display=true` returns raw PNG bytes,
+        which the MCP layer cannot return as structured output; retrieve the
+        image itself via its URL outside MCP.
+
         **Example Request** — JSON response with screenshot ID:
 
         [`https://api.helioviewer.org/v2/takeScreenshot/?date=2014-01-01T23:59:59Z&imageScale=2.4204409&layers=[SDO,AIA,AIA,335,1,100]&events=[AR,HMI_HARP;SPoCA,1],[CH,all,1]&eventsLabels=false&x0=0&y0=0&width=1920&height=1200`](<https://api.helioviewer.org/v2/takeScreenshot/?date=2014-01-01T23:59:59Z&imageScale=2.4204409&layers=[SDO,AIA,AIA,335,1,100]&events=[AR,HMI_HARP;SPoCA,1],[CH,all,1]&eventsLabels=false&x0=0&y0=0&width=1920&height=1200>)
@@ -978,15 +983,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ClosestImageResponse'
               example:
-                id: 34205701
+                id: "34205701"
                 date: "2014-01-02 00:00:02"
+                name: "AIA 335"
                 scale: 0.58996068317702
                 scaleCorrection: 1.01701692521
                 width: 4096
                 height: 4096
                 refPixelX: 2048.5
                 refPixelY: 2048.5
+                offsetX: 0
+                offsetY: 0
+                rotation: 0
                 rsun: 1600
+                dsun: 147094770000
                 sunCenterOffsetParams: []
                 layeringOrder: 1
 
@@ -1264,13 +1274,33 @@ paths:
             example: simpletree
       responses:
         "200":
-          description: Array of solar event groups.
+          description: |
+            Solar feature/event data. The shape depends on the `format`
+            parameter: `tree` (default) and `flat` return arrays, while
+            `simpletree` returns an object map keyed by `SOURCE>>Label`.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EventGroup'
+                oneOf:
+                  - title: tree
+                    description: Default nested category/group structure.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventGroup'
+                  - title: flat
+                    description: One object per event, no category nesting.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FlatEvent'
+                  - title: simpletree
+                    description: >-
+                      One-level map keyed by `SOURCE>>Label`; each value is an
+                      array of matching events (empty buckets are kept).
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/FlatEvent'
               examples:
                 tree:
                   summary: Default tree format
@@ -2065,7 +2095,10 @@ components:
         layers:
           type: string
         events:
-          type: string
+          type: object
+          description: >
+            Event/feature annotation state (keyed by event tree, e.g.
+            tree_HEK). Only returned when verbose=true.
         timestamp:
           type: string
         x1:
@@ -2247,13 +2280,17 @@ components:
         - layeringOrder
       properties:
         id:
-          type: integer
+          type: string
           description: Unique image identifier.
-          example: 34205701
+          example: "34205701"
         date:
           type: string
           description: Date/time of the selected image.
           example: "2014-01-02 00:00:02"
+        name:
+          type: string
+          description: Human-readable name of the datasource.
+          example: "AIA 335"
         scale:
           type: number
           description: Normalized image scale in arcseconds per pixel.
@@ -2278,10 +2315,26 @@ components:
           type: number
           description: Y-coordinate of the reference pixel.
           example: 2048.5
+        offsetX:
+          type: number
+          description: Horizontal offset of Sun center from the reference pixel.
+          example: 0
+        offsetY:
+          type: number
+          description: Vertical offset of Sun center from the reference pixel.
+          example: 0
+        rotation:
+          type: number
+          description: Rotation of the image in degrees.
+          example: 0
         rsun:
           type: number
           description: Solar radius in pixels.
           example: 1600
+        dsun:
+          type: number
+          description: Distance from the observer to the Sun in meters.
+          example: 147094770000
         sunCenterOffsetParams:
           description: FITS header positioning metadata.
         layeringOrder:
@@ -2320,6 +2373,31 @@ components:
           items:
             type: object
             description: Event-specific data conforming to the HEK Event Specification.
+
+    FlatEvent:
+      type: object
+      description: >-
+        A single solar feature/event as returned by `format=flat` and inside
+        the buckets of `format=simpletree`. Additional event-specific fields
+        (per the HEK Event Specification) may be present.
+      additionalProperties: true
+      properties:
+        concept:
+          type: string
+          description: Event type name (e.g. "Active Region").
+          example: Active Region
+        frm_name:
+          type: string
+          description: Feature Recognition Method (FRM) name.
+          example: NOAA SWPC Observer
+        path:
+          type: string
+          description: Full `SOURCE>>Label>>FRM` path for the event.
+          example: "HEK>>Active Region>>NOAA SWPC Observer"
+        pin:
+          type: string
+          description: Short event type code (e.g. "AR").
+          example: AR
 
     UserVideo:
       type: object
