@@ -42,7 +42,7 @@ $dashboards = [
         }
         #headerText {
             color: #e0e0e0;
-            font-size: 14px;
+            font-size: 16px;
             margin: 0;
         }
         #tabs {
@@ -58,7 +58,7 @@ $dashboards = [
             border: none;
             color: #a0a0a0;
             padding: 10px 16px;
-            font-size: 13px;
+            font-size: 14px;
             cursor: pointer;
             border-bottom: 2px solid transparent;
         }
