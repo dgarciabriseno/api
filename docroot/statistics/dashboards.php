@@ -187,7 +187,7 @@ $dashboards = [
 
                 loadingEl.style.display = 'none';
 
-                supersetEmbeddedSdk.embedDashboard({
+                const embedded = await supersetEmbeddedSdk.embedDashboard({
                     id: dashboard.id,
                     supersetDomain: SUPERSET_URL,
                     mountPoint: containerEl,
@@ -198,6 +198,14 @@ $dashboards = [
                         hideTab: false,
                     },
                 });
+
+                if (embedded && typeof embedded.setThemeMode === 'function') {
+                    try {
+                        embedded.setThemeMode('dark');
+                    } catch (themeError) {
+                        console.warn('Could not set dark theme for dashboard:', dashboard.key, themeError);
+                    }
+                }
             } catch (error) {
                 console.error('Error embedding dashboard:', dashboard.key, error);
                 loadingEl.style.display = 'none';
