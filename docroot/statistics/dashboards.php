@@ -83,7 +83,13 @@ $dashboards = [
             display: none;
         }
         .dashboard-pane.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-container {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
         }
         .dashboard-pane iframe {
             width: 100%;
