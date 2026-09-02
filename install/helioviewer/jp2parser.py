@@ -144,6 +144,10 @@ class JP2parser:
         Returns the suffix which should be used when saving this image to disk.
         e.g. by default it is /nickname/year/month/day/measurement.
              This may be different depending on the data source
+
+        NOTE: If the observatory is "Surya", the whole storage path returned
+        here must be prefixed with "Surya" so that it doesn't conflict with
+        SDO data.
         """
         date_str = imageData['date'].strftime('%Y/%m/%d')
 
@@ -155,6 +159,9 @@ class JP2parser:
             directory = os.path.join(imageData['nickname'], date_str, self._get_punch_file_type(self._filepath))
         else:
             directory = os.path.join(imageData['nickname'], date_str, str(imageData['measurement']))
+
+        if imageData['observatory'] == "Surya":
+            directory = os.path.join("Surya", directory)
 
         return directory
 
